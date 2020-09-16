@@ -1,13 +1,20 @@
 import express, { Express, Request, Response } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import logger from 'morgan';
+import bodyParser from 'body-parser';
 
 const app: Express = express();
 const port: number = 5000;
 
-app.get('/hello', (req: Request, res: Response): void => {
-  res.send('Hello CodeLab');
-});
+// middleware
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
+//route
+
+
+// static
 if (process.env.NODE_ENV === 'development') {
   app.use('/', createProxyMiddleware({ target: 'http://192.168.0.20:3000', changeOrigin: true }));
   
