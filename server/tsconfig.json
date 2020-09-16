@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "es6",
+    "rootDir": "ts",
+    "outDir": "js",
+    "sourceMap": true,
+    "removeComments": true,
+    "esModuleInterop": true
+  },
+  "exclude": [
+    "../node_modules"
+  ]
+}
