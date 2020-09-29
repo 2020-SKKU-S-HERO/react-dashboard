@@ -1,9 +1,10 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import logger from 'morgan';
 import bodyParser from 'body-parser';
+import { apiRouter } from './routes/api-route';
 
-const app: Express = express();
+export const app: Express = express();
 const port: number = 5000;
 
 // middleware
@@ -12,7 +13,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 //route
-
+app.use('/api', apiRouter);
 
 // static
 if (process.env.NODE_ENV === 'development') {
