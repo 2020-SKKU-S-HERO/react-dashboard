@@ -39,7 +39,7 @@
     "start": "cross-env NODE_ENV=production node ./build/main.js",
     "dev": "concurrently \"npm run dev_server\" \"npm run dev_react\"",
     "build": "npm run build_react && npm run build_server",
-    "dev_react": "react-scripts start",
+    "dev_react": "set PORT=4500 && react-scripts start",
     "dev_server": "cross-env NODE_ENV=development nodemon server/js/main.js",
     "build_react": "react-scripts build",
     "build_server": "babel server/js --out-dir build"
