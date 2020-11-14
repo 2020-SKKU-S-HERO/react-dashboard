@@ -4,6 +4,7 @@ import color from '../color/color';
 
 type PieChartProps = {
   data: any;
+  formatters?: any;
 };
 
 const options = {
@@ -39,7 +40,7 @@ const options = {
   pieHole: 0.38
 };
 
-const PieChart: React.FC<PieChartProps> = ({ data }): JSX.Element => {
+const PieChart: React.FC<PieChartProps> = ({ data, formatters }): JSX.Element => {
   return (
     <>
       <Chart
@@ -47,10 +48,10 @@ const PieChart: React.FC<PieChartProps> = ({ data }): JSX.Element => {
         height={'200px'}
         chartType={'PieChart'}
         data={data.sort((a: Array<any>, b: Array<any>): number => {
-          console.log(a);
           return b[1] - a[1];
         })}
         options={options}
+        formatters={formatters}
       />
     </>
   );

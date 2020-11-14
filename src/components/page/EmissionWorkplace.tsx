@@ -8,21 +8,39 @@ import PredictionEmissionChart from '../chart/PredictionEmissionChart';
 import WeatherChart from '../chart/WeatherChart';
 import ResourceContributionChart from '../chart/ResourceContributionChart';
 import ContainerTitle from './ContainerTitle';
+import { EmissionDataForLocation, EmissionDataState, useEmissionState } from '../context/EmissionContext';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { MatchParams } from '../App';
+import { abbreviateNumber } from '../script/common';
 
-type EmissionWorkplaceProps = {};
+type EmissionWorkplaceProps = RouteComponentProps<MatchParams> & {};
 
-const EmissionWorkplace: React.FC<EmissionWorkplaceProps> = (): JSX.Element => {
+const EmissionWorkplace: React.FC<EmissionWorkplaceProps> = ({ match }): JSX.Element => {
+  const emissionState: EmissionDataState = useEmissionState();
+  const { workplace } = match.params;
+  let title: string = '';
+  let thisYearEmission: number = 0;
+  let expectedEmission: number = 0;
+  
+  emissionState.emissionData.emissionDataList.map((data: EmissionDataForLocation): void => {
+    if (data.location.en === workplace) {
+      title = `탄소배출량 - ${data.location.ko} 사업장`;
+      thisYearEmission += data.thisYearEmission;
+      expectedEmission += data.predictionEmission + data.thisYearEmission;
+    }
+  });
+  
   return (
     <div className="container-fluid">
-      <ContainerTitle title="탄소배출량 - 병점 사업장"/>
+      <ContainerTitle title={title}/>
       <div className="row">
         <div className="col-12 col-sm-4">
           <div className="row">
             <div className="col-6">
-              <DataEmphasisCard value="20K t" description="현재 배출량" subDescription="2020년 1월 1일 - 현재" />
+              <DataEmphasisCard value={abbreviateNumber(thisYearEmission)} unit="t" description="현재 배출량" subDescription="2020년 1월 1일 - 현재" />
             </div>
             <div className="col-6">
-              <DataEmphasisCard value="60K t" description="예상되는 배출량" subDescription="2020년" />
+              <DataEmphasisCard value={abbreviateNumber(expectedEmission)} unit="t" description="예상되는 배출량" subDescription="2020년" />
             </div>
             <div className="col-12">
               <Card>
@@ -65,4 +83,4 @@ const EmissionWorkplace: React.FC<EmissionWorkplaceProps> = (): JSX.Element => {
   );
 };
 
-export default EmissionWorkplace;
+export default withRouter(EmissionWorkplace);

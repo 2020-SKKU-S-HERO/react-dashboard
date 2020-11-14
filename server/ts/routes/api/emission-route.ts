@@ -32,7 +32,7 @@ let permissibleEmission: number = 0;
 
 router.get('/', (req: Request, res: Response): void => {
   const data = {
-    emissionDataForLocation: emissionDataList,
+    emissionDataList: emissionDataList,
     permissibleEmission: permissibleEmission
   };
   

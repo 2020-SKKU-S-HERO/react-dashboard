@@ -19,6 +19,12 @@ export const color = {
   },
   teal: {
     vivid: '#20C997'
+  },
+  red: {
+    vivid: '#FF0000'
+  },
+  blue: {
+    vivid: '#0000FF'
   }
 }
 

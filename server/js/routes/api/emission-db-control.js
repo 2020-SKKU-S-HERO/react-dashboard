@@ -78,8 +78,8 @@ function getPastEmissionTable(location, fromDate, toDate, onGetPastEmissionTable
         queryStr = `
       SELECT date_time, emissions
       FROM co2_emissions
-      WHERE date_time >= '${fromDate.toLocaleString('en-GB')}'
-        AND date_time <= '${toDate.toLocaleString('en-GB')}'
+      WHERE date_time >= '${fromDate.toISOString()}'
+        AND date_time <= '${toDate.toISOString()}'
         AND location = '${location}';
     `;
     }
@@ -87,8 +87,8 @@ function getPastEmissionTable(location, fromDate, toDate, onGetPastEmissionTable
         queryStr = `
       SELECT date_time, emissions
       FROM co2_emissions
-      WHERE date_time >= '${fromDate.toLocaleString('en-GB')}'
-        AND date_time <= '${toDate.toLocaleString('en-GB')}'
+      WHERE date_time >= '${fromDate.toISOString()}'
+        AND date_time <= '${toDate.toISOString()}'
     `;
     }
     db_control_1.getData(queryStr, (data) => {

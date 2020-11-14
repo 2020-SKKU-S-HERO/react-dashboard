@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { Component, createRef, RefObject, useEffect, useState } from 'react';
 import color from '../color/color';
 import Chart from 'react-google-charts';
 import CardTitle from '../card/CardTitle';
-import { Dropdown } from 'semantic-ui-react';
+import { Dropdown, DropdownProps } from 'semantic-ui-react';
 import styled from 'styled-components';
 import CardDescription from '../card/CardDescription';
 import { DescriptionData } from '../card/card-type';
+import {
+  EmissionDataForLocation,
+  EmissionDataState,
+  TimeSeriesData,
+  useEmissionState
+} from '../context/EmissionContext';
 
 type PastEmissionChartProps = {};
 
@@ -58,44 +64,6 @@ const options = {
   }
 };
 
-const data: any = [
-  [
-    { label: '날짜', type: 'date' },
-    { label: '배출량', type: 'number' },
-    { label: '평균', type: 'number' }
-  ],
-  [new Date(2020, 0, 1), 1500, 3900],
-  [new Date(2020, 0, 2), 3000, 3900],
-  [new Date(2020, 0, 3), 1800, 3900],
-  [new Date(2020, 0, 4), 2400, 3900],
-  [new Date(2020, 0, 5), 3500, 3900],
-  [new Date(2020, 0, 6), 3000, 3900],
-  [new Date(2020, 0, 7), 5500, 3900],
-  [new Date(2020, 0, 8), 2400, 3900],
-  [new Date(2020, 0, 9), 7000, 3900],
-  [new Date(2020, 0, 10), 1100, 3900],
-  [new Date(2020, 0, 11), 2400, 3900],
-  [new Date(2020, 0, 12), 4000, 3900],
-  [new Date(2020, 0, 13), 3400, 3900],
-  [new Date(2020, 0, 14), 2000, 3900],
-  [new Date(2020, 0, 15), 7060, 3900],
-  [new Date(2020, 0, 16), 6040, 3900],
-  [new Date(2020, 0, 17), 6008, 3900],
-  [new Date(2020, 0, 18), 5200, 3900],
-  [new Date(2020, 0, 19), 4800, 3900],
-  [new Date(2020, 0, 20), 6002, 3900],
-  [new Date(2020, 0, 21), 5000, 3900],
-  [new Date(2020, 0, 22), 2001, 3900],
-  [new Date(2020, 0, 23), 105, 3900],
-  [new Date(2020, 0, 24), 3400, 3900],
-  [new Date(2020, 0, 25), 5005, 3900],
-  [new Date(2020, 0, 26), 2004, 3900],
-  [new Date(2020, 0, 27), 5005, 3900],
-  [new Date(2020, 0, 28), 4700, 3900],
-  [new Date(2020, 0, 29), 2000, 3900],
-  [new Date(2020, 0, 30), 1004, 3900]
-];
-
 const monthlyDailyOptions = [
   {
     key: 'daily',
@@ -109,28 +77,7 @@ const monthlyDailyOptions = [
   }
 ];
 
-const dateOptions = [
-  {
-    key: '2020-04',
-    text: '2020년 4월',
-    value: '2020-04'
-  },
-  {
-    key: '2020-03',
-    text: '2020년 3월',
-    value: '2020-03'
-  },
-  {
-    key: '2020-02',
-    text: '2020년 2월',
-    value: '2020-02'
-  },
-  {
-    key: '2020-01',
-    text: '2020년 1월',
-    value: '2020-01'
-  }
-];
+let dateOptions: any = [];
 
 const TitleBlock = styled.div`
   display: flex;
@@ -142,7 +89,114 @@ const DropdownBlock = styled.div`
   display: flex;
 `;
 
+let hAxisDate: Date[] = [];
+
 const PastEmissionChart: React.FC<PastEmissionChartProps> = (): JSX.Element => {
+  const emissionState: EmissionDataState = useEmissionState();
+  const rangeSelectorRef: RefObject<Component<DropdownProps, any, any>> = createRef();
+  const dateSelectorRef: RefObject<Component<DropdownProps, any, any>> = createRef();
+  let data: any = [
+    [
+      { label: '날짜', type: 'date' },
+      { label: '배출량', type: 'number' },
+      { label: '평균', type: 'number' }
+    ]
+  ];
+  
+  const now: Date = new Date();
+  
+  for (let i = 1; i <= now.getDate(); i++) {
+    data.push([new Date(now.getFullYear(), now.getMonth(), i), 0, 0]);
+  }
+  
+  hAxisDate.length = 0;
+  
+  for (let i = 1; i <= (new Date(now.getFullYear(), now.getMonth() + 1, 0)).getDate(); i++) {
+    hAxisDate.push(new Date(now.getFullYear(), now.getMonth(), i));
+  }
+  
+  const onChangeRangeSelectorEventListener = (event: React.SyntheticEvent<HTMLElement>, data: DropdownProps): void => {
+    let oldestDate: Date = new Date();
+  
+    console.log(data);
+  
+    emissionState.emissionData.emissionDataList.map((emissionData: EmissionDataForLocation): void => {
+      emissionData.pastEmissionTable.map((timeSeriesData: TimeSeriesData): void => {
+        const date: Date = new Date(timeSeriesData.date);
+      
+        if (date.valueOf() < oldestDate.valueOf()) {
+          oldestDate = date;
+        }
+      });
+    });
+  
+    dateOptions.length = 0;
+    
+    if (data.value === 'daily') {
+      for (let date: Date = new Date(); date.getFullYear() > oldestDate.getFullYear() || date.getMonth() >= oldestDate.getMonth(); date.setMonth(date.getMonth() - 1)) {
+        dateOptions.push({
+          key: date.toISOString(),
+          text: `${date.getFullYear()}년 ${date.getMonth() + 1}월`,
+          value: date.toISOString()
+        });
+      }
+
+      if (dateSelectorRef.current) {
+        dateSelectorRef.current.setState({
+          value: dateOptions[0].value
+        })
+      }
+    } else if (data.value === 'monthly') {
+      for (let date: Date = new Date(); date.getFullYear() >= oldestDate.getFullYear(); date.setFullYear(date.getFullYear() - 1)) {
+        dateOptions.push({
+          key: date.toISOString(),
+          text: `${date.getFullYear()}년`,
+          value: date.toISOString()
+        });
+      }
+  
+      if (dateSelectorRef.current) {
+        dateSelectorRef.current.setState({
+          value: dateOptions[0].value
+        })
+      }
+    }
+  };
+  
+  const onChangeDateSelectorEventListener = (event: React.SyntheticEvent<HTMLElement>, data: DropdownProps): void => {
+    if (typeof data.value === 'string') {
+      updateChart(new Date(data.value), rangeSelectorRef.current?.state.value);
+    }
+  };
+  
+  const updateChart = (selectedDate: Date, range: string) => {
+    if (range === 'daily') {
+      const dataTable: TimeSeriesData[] = [];
+      
+      emissionState.emissionData.emissionDataList.map((emissionData: EmissionDataForLocation): void => {
+        emissionData.pastEmissionTable.map((timeSeriesData: TimeSeriesData): void => {
+          const date: Date = new Date(timeSeriesData.date);
+        
+          if (selectedDate.getFullYear() === date.getFullYear() && selectedDate.getMonth() === date.getMonth()) {
+            dataTable.push(timeSeriesData);
+          }
+        });
+      });
+  
+      console.log(dataTable);
+      
+      // for (let i = 1; i <= now.getDate(); i++) {
+      //   data.push([new Date(now.getFullYear(), now.getMonth(), i), 0, 0]);
+      // }
+    
+      hAxisDate.length = 0;
+    
+      for (let i = 1; i <= (new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0)).getDate(); i++) {
+        hAxisDate.push(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), i));
+      }
+    }
+  }
+  
   const descriptionDataset: DescriptionData[] = [
     {
       value: '124K t',
@@ -154,6 +208,36 @@ const PastEmissionChart: React.FC<PastEmissionChartProps> = (): JSX.Element => {
     }
   ];
   
+  useEffect((): void => {
+    let oldestDate: Date = new Date();
+  
+    emissionState.emissionData.emissionDataList.map((emissionData: EmissionDataForLocation): void => {
+      emissionData.pastEmissionTable.map((timeSeriesData: TimeSeriesData): void => {
+        const date: Date = new Date(timeSeriesData.date);
+      
+        if (date.valueOf() < oldestDate.valueOf()) {
+          oldestDate = date;
+        }
+      });
+    });
+  
+    dateOptions.length = 0;
+  
+    for (let date: Date = new Date(); date.getFullYear() > oldestDate.getFullYear() || date.getMonth() >= oldestDate.getMonth(); date.setMonth(date.getMonth() - 1)) {
+      dateOptions.push({
+        key: date.toISOString(),
+        text: `${date.getFullYear()}년 ${date.getMonth() + 1}월`,
+        value: date.toISOString()
+      });
+    }
+  
+    if (dateSelectorRef.current) {
+      dateSelectorRef.current.setState({
+        value: dateOptions[0].value
+      })
+    }
+  }, [emissionState.emissionData.emissionDataList, dateSelectorRef]);
+  
   return (
     <>
       <TitleBlock>
@@ -163,15 +247,18 @@ const PastEmissionChart: React.FC<PastEmissionChartProps> = (): JSX.Element => {
             style={{ width: 80, height: 30, marginRight: 20, marginTop: 3 }}
             fluid
             selection
+            onChange={onChangeRangeSelectorEventListener}
             options={monthlyDailyOptions}
             defaultValue={monthlyDailyOptions[0].value}
+            ref={rangeSelectorRef}
           />
           <Dropdown
-            style={{ width: 120, height: 30, marginRight: 20, marginTop: 3 }}
+            style={{ width: 130, height: 30, marginRight: 20, marginTop: 3 }}
             fluid
             selection
+            onChange={onChangeDateSelectorEventListener}
             options={dateOptions}
-            defaultValue={dateOptions[0].value}
+            ref={dateSelectorRef}
           />
         </DropdownBlock>
       </TitleBlock>
@@ -180,7 +267,13 @@ const PastEmissionChart: React.FC<PastEmissionChartProps> = (): JSX.Element => {
         height={'300px'}
         style={{marginTop: 5}}
         chartType="LineChart"
-        options={options}
+        options={{
+          ...options,
+          hAxis: {
+            ticks: hAxisDate,
+            format: 'd일'
+          }
+        }}
         data={data}
         formatters={[
           {

@@ -5,6 +5,12 @@ import color from './color/color';
 import EmissionHome from './page/EmissionHome';
 import EmissionWorkplace from './page/EmissionWorkplace';
 import { Switch, Route } from 'react-router-dom';
+import EmissionProvider from './context/EmissionContext';
+import CERPrice from './page/CERPrice';
+
+export type MatchParams = {
+  workplace: string;
+}
 
 const Container = styled.div`
   width: calc(100% - 250px);
@@ -22,17 +28,18 @@ const AppBlock = styled.div`
 
 function App() {
   return (
-    <AppBlock>
-      <SidebarList>
-      
-      </SidebarList>
-      <Container>
-        <Switch>
-          <Route path="/emission/home" component={EmissionHome}/>
-          <Route path="/emission/:workplace" component={EmissionWorkplace}/>
-        </Switch>
-      </Container>
-    </AppBlock>
+    <EmissionProvider>
+      <AppBlock>
+        <SidebarList/>
+        <Container>
+          <Switch>
+            <Route path="/emission/home" component={EmissionHome} />
+            <Route path="/emission/:workplace" component={EmissionWorkplace} />
+            <Route path="/cerprice" component={CERPrice} />
+          </Switch>
+        </Container>
+      </AppBlock>
+    </EmissionProvider>
   );
 }
 

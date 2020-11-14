@@ -83,16 +83,16 @@ export function getPastEmissionTable(location: string | undefined, fromDate: Dat
     queryStr = `
       SELECT date_time, emissions
       FROM co2_emissions
-      WHERE date_time >= '${fromDate.toLocaleString('en-GB')}'
-        AND date_time <= '${toDate.toLocaleString('en-GB')}'
+      WHERE date_time >= '${fromDate.toISOString()}'
+        AND date_time <= '${toDate.toISOString()}'
         AND location = '${location}';
     `;
   } else {
     queryStr = `
       SELECT date_time, emissions
       FROM co2_emissions
-      WHERE date_time >= '${fromDate.toLocaleString('en-GB')}'
-        AND date_time <= '${toDate.toLocaleString('en-GB')}'
+      WHERE date_time >= '${fromDate.toISOString()}'
+        AND date_time <= '${toDate.toISOString()}'
     `;
   }
   

@@ -4,8 +4,17 @@ import color from '../color/color';
 import CardTitle from '../card/CardTitle';
 import CardDescription from '../card/CardDescription';
 import { DescriptionData } from '../card/card-type';
+import {
+  EmissionDataForLocation,
+  EmissionDataState,
+  TimeSeriesData,
+  useEmissionState
+} from '../context/EmissionContext';
+import { abbreviateNumber } from '../script/common';
+import { MatchParams } from '../App';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
 
-type TodayEmissionChartProps = {};
+type TodayEmissionChartProps = RouteComponentProps<MatchParams> & {};
 
 const options = {
   vAxis: {
@@ -13,9 +22,6 @@ const options = {
     viewWindow: {
       min: 0
     }
-  },
-  hAxis: {
-    format: 'H시'
   },
   series: {
     0: {
@@ -52,60 +58,81 @@ const options = {
   }
 };
 
-const data: any = [
-  [
-    'date',
-    '배출량',
-    '평균'
-  ],
-  [new Date(2020, 9, 18, 0, 0, 0), 15, 45],
-  [new Date(2020, 9, 18, 1, 0, 0), 20, 45],
-  [new Date(2020, 9, 18, 2, 0, 0), 48, 45],
-  [new Date(2020, 9, 18, 3, 0, 0), 11, 45],
-  [new Date(2020, 9, 18, 4, 0, 0), 45, 45],
-  [new Date(2020, 9, 18, 5, 0, 0), 64, 45],
-  [new Date(2020, 9, 18, 6, 0, 0), 24, 45],
-  [new Date(2020, 9, 18, 7, 0, 0), 34, 45],
-  [new Date(2020, 9, 18, 8, 0, 0), 25, 45],
-  [new Date(2020, 9, 18, 9, 0, 0), 66, 45],
-  [new Date(2020, 9, 18, 10, 0, 0), 54, 45],
-  [new Date(2020, 9, 18, 11, 0, 0), 44, 45],
-  [new Date(2020, 9, 18, 12, 0, 0), 77, 45],
-  [new Date(2020, 9, 18, 13, 0, 0), 55, 45],
-  [new Date(2020, 9, 18, 14, 0, 0), 38, 45],
-  [new Date(2020, 9, 18, 15, 0, 0), 46, 45],
-  [new Date(2020, 9, 18, 16, 0, 0), 75, 45],
-  [new Date(2020, 9, 18, 17, 0, 0), 45, 45],
-  [new Date(2020, 9, 18, 18, 0, 0), 55, 45],
-  [new Date(2020, 9, 18, 19, 0, 0), 61, 45],
-  [new Date(2020, 9, 18, 20, 0, 0), 49, 45],
-  [new Date(2020, 9, 18, 21, 0, 0), 52, 45],
-  [new Date(2020, 9, 18, 22, 0, 0), 35, 45],
-  [new Date(2020, 9, 18, 23, 0, 0), 64, 45],
-  [new Date(2020, 9, 18, 24, 0, 0), 22, 45],
-];
-
-const TodayEmissionChart: React.FC<TodayEmissionChartProps> = (): JSX.Element => {
+const TodayEmissionChart: React.FC<TodayEmissionChartProps> = ({ match }): JSX.Element => {
+  const emissionState: EmissionDataState = useEmissionState();
+  const { workplace } = match.params;
+  const now: Date = new Date();
+  let data: any = [
+    [
+      'date',
+      '배출량',
+      '평균'
+    ]
+  ];
+  
+  for (let i = 0; i <= now.getHours(); i++) {
+    data.push([new Date(now.getFullYear(), now.getMonth(), now.getDate(), i, 0, 0), 0, 0]);
+  }
+  
+  emissionState.emissionData.emissionDataList.map((emissionData: EmissionDataForLocation): void => {
+    if (workplace === undefined || workplace === emissionData.location.en) {
+      emissionData.todayEmissionTable.map((timeSeriesData: TimeSeriesData): void => {
+        const date: Date = new Date(timeSeriesData.date);
+    
+        data[date.getHours() + 1][1] += timeSeriesData.value;
+      });
+    }
+  });
+  
+  let totalEmission: number = 0;
+  let averageEmissionPerHours: number = 0;
+  
+  data.map((value: any): void => {
+    if (value[0] instanceof Date) {
+      totalEmission += value[1];
+    }
+  });
+  
+  averageEmissionPerHours = totalEmission / (now.getHours() + 1);
+  
+  data.map((value: any): void => {
+    if (value[0] instanceof Date) {
+      value[2] = averageEmissionPerHours;
+    }
+  });
+  
   const descriptionDataset: DescriptionData[] = [
     {
-      value: '2.5K t',
+      value: abbreviateNumber(totalEmission) + ' t',
       description: '오늘 배출량'
     },
     {
-      value: '45 t',
+      value: abbreviateNumber(averageEmissionPerHours) + ' t',
       description: '평균'
     }
   ];
   
+  let hAxisTime: Date[] = [];
+  
+  for (let fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0); fromDate < now; fromDate.setHours(fromDate.getHours() + 1)) {
+    hAxisTime.push(new Date(fromDate));
+  }
+  
   return (
     <>
-      <CardTitle title="오늘 배출량"/>
+      <CardTitle title="오늘 배출량" />
       <Chart
         width={'100%'}
         height={'300px'}
-        style={{marginTop: 5}}
+        style={{ marginTop: 5 }}
         chartType="LineChart"
-        options={options}
+        options={{
+          ...options,
+          hAxis: {
+            ticks: hAxisTime,
+            format: 'H시'
+          }
+        }}
         data={data}
         formatters={[
           {
@@ -138,4 +165,4 @@ const TodayEmissionChart: React.FC<TodayEmissionChartProps> = (): JSX.Element =>
   );
 };
 
-export default TodayEmissionChart;
+export default withRouter(TodayEmissionChart);

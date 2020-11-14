@@ -13,7 +13,7 @@ let emissionDataList = [];
 let permissibleEmission = 0;
 router.get('/', (req, res) => {
     const data = {
-        emissionDataForLocation: emissionDataList,
+        emissionDataList: emissionDataList,
         permissibleEmission: permissibleEmission
     };
     res.send(JSON.stringify(data));

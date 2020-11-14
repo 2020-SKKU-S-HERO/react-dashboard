@@ -2,8 +2,11 @@ import React from 'react';
 import Chart from 'react-google-charts';
 import color from '../color/color';
 import CardTitle from '../card/CardTitle';
+import { EmissionDataForLocation, EmissionDataState, useEmissionState } from '../context/EmissionContext';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { MatchParams } from '../App';
 
-type ThisYearEmissionChartProps = {};
+type ThisYearEmissionChartProps = RouteComponentProps<MatchParams> & {};
 
 const options = {
   vAxis: {
@@ -58,17 +61,35 @@ const options = {
   }
 };
 
-const data: any = [
-  [
-    { label: '', type: 'string' },
-    { label: '현재', type: 'number' },
-    { label: '예상', type: 'number' },
-    { label: '허용', type: 'number' }
-  ],
-  ['', 20000, 60000, 30000]
-];
-
-const ThisYearEmissionChart: React.FC<ThisYearEmissionChartProps> = (): JSX.Element => {
+const ThisYearEmissionChart: React.FC<ThisYearEmissionChartProps> = ({ match }): JSX.Element => {
+  const emissionState: EmissionDataState = useEmissionState();
+  const { workplace } = match.params;
+  let permissibleEmission: number | null = emissionState.emissionData.permissibleEmission;
+  let thisYearEmission: number = 0;
+  let expectedEmission: number = 0;
+  
+  emissionState.emissionData.emissionDataList.map((data: EmissionDataForLocation): void => {
+    if (workplace === undefined || workplace === data.location.en) {
+      thisYearEmission += data.thisYearEmission;
+      expectedEmission += data.predictionEmission + data.thisYearEmission;
+    }
+  });
+  
+  let data: any = [
+    [
+      { label: '', type: 'string' },
+      { label: '현재', type: 'number' },
+      { label: '예상', type: 'number' },
+      { label: '허용', type: 'number' }
+    ],
+    ['', thisYearEmission, expectedEmission, permissibleEmission]
+  ];
+  
+  if (workplace !== undefined) {
+    data[0].pop(3);
+    data[1].pop(3);
+  }
+  
   return (
     <>
       <CardTitle title="올해 배출량 개요"/>
@@ -109,4 +130,4 @@ const ThisYearEmissionChart: React.FC<ThisYearEmissionChartProps> = (): JSX.Elem
   );
 };
 
-export default ThisYearEmissionChart;
+export default withRouter(ThisYearEmissionChart);

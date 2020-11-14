@@ -3,11 +3,13 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import logger from 'morgan';
 import bodyParser from 'body-parser';
 import { apiRouter } from './routes/api-route';
+import cors from 'cors';
 
 export const app: Express = express();
 const port: number = 5000;
 
 // middleware
+app.use(cors());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

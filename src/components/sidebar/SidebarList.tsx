@@ -21,7 +21,7 @@ const SidebarList: React.FC<SidebarListProps> = (): JSX.Element => {
         <SidebarSubItem content="수원" link="/emission/suwon"/>
         <SidebarSubItem content="인천" link="/emission/incheon"/>
       </SidebarItem>
-      <SidebarItem icon="" content="탄소배출권"/>
+      <SidebarItem icon="" content="탄소배출권" link="/cerprice"/>
       <SidebarItem icon="" content="데이터 입력"/>
     </SidebarListBlock>
   );

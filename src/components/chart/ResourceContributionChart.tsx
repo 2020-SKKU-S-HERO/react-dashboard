@@ -34,7 +34,7 @@ const ResourceContributionChart: React.FC<ResourceContributionChartProps> = (): 
   
   return (
     <>
-      <CardTitle title="배출량 기여도"/>
+      <CardTitle title="자원별 배출량 기여도"/>
       <PieChart data={data}/>
       <Table tableData={tableData}/>
     </>

@@ -7,10 +7,25 @@ import PastEmissionChart from '../chart/PastEmissionChart';
 import PredictionEmissionChart from '../chart/PredictionEmissionChart';
 import DataEmphasisCard from '../card/DataEmphasisCard';
 import ContainerTitle from './ContainerTitle';
+import { EmissionDataForLocation, EmissionDataState, useEmissionState } from '../context/EmissionContext';
+import { abbreviateNumber } from '../script/common';
 
 type EmissionHomeProps = {};
 
 const EmissionHome: React.FC<EmissionHomeProps> = (): JSX.Element => {
+  const emissionState: EmissionDataState = useEmissionState();
+  const permissibleEmission: number = emissionState.emissionData.permissibleEmission;
+  let thisYearEmission: number = 0;
+  let expectedEmission: number = 0;
+  let expectedExcessEmission: number = 0;
+  
+  emissionState.emissionData.emissionDataList.map((data: EmissionDataForLocation): void => {
+    thisYearEmission += data.thisYearEmission;
+    expectedEmission += data.predictionEmission + data.thisYearEmission;
+  });
+  
+  expectedExcessEmission = expectedEmission - permissibleEmission;
+  
   return (
     <div className="container-fluid">
       <ContainerTitle title="탄소배출량 - 종합"/>
@@ -18,16 +33,16 @@ const EmissionHome: React.FC<EmissionHomeProps> = (): JSX.Element => {
         <div className="col-12 col-sm-4">
           <div className="row">
             <div className="col-6">
-              <DataEmphasisCard value="20K t" description="현재 배출량" subDescription="2020년 1월 1일 - 현재" />
+              <DataEmphasisCard value={abbreviateNumber(thisYearEmission)} unit="t" description="현재 배출량" subDescription="2020년 1월 1일 - 현재" />
             </div>
             <div className="col-6">
-              <DataEmphasisCard value="60K t" description="예상되는 배출량" subDescription="2020년" />
+              <DataEmphasisCard value={abbreviateNumber(expectedEmission)} unit="t" description="예상되는 배출량" subDescription="2020년" />
             </div>
             <div className="col-6">
-              <DataEmphasisCard value="30K t" description="허용 배출량" subDescription="2020년"/>
+              <DataEmphasisCard value={abbreviateNumber(permissibleEmission)} unit="t" description="허용 배출량" subDescription="2020년"/>
             </div>
             <div className="col-6">
-              <DataEmphasisCard value="30K t" description="예상되는 초과량" subDescription="2020년"/>
+              <DataEmphasisCard value={abbreviateNumber(expectedExcessEmission)} unit="t" description="예상되는 초과량" subDescription="2020년"/>
             </div>
             <div className="col-12">
               <Card>

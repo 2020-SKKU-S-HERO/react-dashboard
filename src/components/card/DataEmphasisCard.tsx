@@ -5,6 +5,7 @@ import color from '../color/color';
 
 type DataEmphasisCardProps = {
   value: string;
+  unit: string;
   description: string;
   subDescription: string;
 };
@@ -19,8 +20,17 @@ const EmphasisCardBlock = styled.div`
   
   .value {
     color: ${color.violet.vivid};
-    font-size: 22px;
-    font-weight: 600;
+    
+    .number {
+      font-weight: 500;
+      font-size: 20px;
+    }
+    
+    .unit {
+      margin-left: 4px;
+      font-weight: 500;
+      font-size: 16px;
+    }
   }
   
   .description {
@@ -28,20 +38,20 @@ const EmphasisCardBlock = styled.div`
     flex-direction: column;
     
     .main-description {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 500;
       margin-bottom: 5px;
     }
     
     .sub-description {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 400;
       color: ${color.gray.vivid};
     }
   }
 `;
 
-const DataEmphasisCard: React.FC<DataEmphasisCardProps> = ({ value, description, subDescription }): JSX.Element => {
+const DataEmphasisCard: React.FC<DataEmphasisCardProps> = ({ value, unit, description, subDescription }): JSX.Element => {
   return (
     <>
       <Card>
@@ -51,7 +61,8 @@ const DataEmphasisCard: React.FC<DataEmphasisCardProps> = ({ value, description,
             <span className="sub-description">{subDescription}</span>
           </div>
           <div className="value">
-            {value}
+            <span className="number">{value}</span>
+            <span className="unit">{unit}</span>
           </div>
         </EmphasisCardBlock>
       </Card>

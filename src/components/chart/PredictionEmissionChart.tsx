@@ -4,8 +4,16 @@ import Chart from 'react-google-charts';
 import CardTitle from '../card/CardTitle';
 import CardDescription from '../card/CardDescription';
 import { DescriptionData } from '../card/card-type';
+import {
+  EmissionDataForLocation,
+  EmissionDataState,
+  TimeSeriesData,
+  useEmissionState
+} from '../context/EmissionContext';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { MatchParams } from '../App';
 
-type PredictionEmissionChartProps = {};
+type PredictionEmissionChartProps = RouteComponentProps<MatchParams> & {};
 
 const options = {
   vAxis: {
@@ -46,28 +54,11 @@ const options = {
   fontSize: 14
 };
 
-const data: any = [
-  [
-    'date',
-    '배출량',
-    '예측 배출량'
-  ],
-  [new Date(2020, 0), 15, 16],
-  [new Date(2020, 1), 19, 17],
-  [new Date(2020, 2), 17, 18],
-  [new Date(2020, 3), 14, 14],
-  [new Date(2020, 4), 10, 9],
-  [new Date(2020, 5), 15, 16],
-  [new Date(2020, 6), 16, 15],
-  [new Date(2020, 7), 21, 22],
-  [new Date(2020, 8), 8, 9],
-  [new Date(2020, 9), 21, 20],
-  [new Date(2020, 10), 16, 16],
-  [new Date(2020, 11), 11, 12]
-];
-
-
-const PredictionEmissionChart: React.FC<PredictionEmissionChartProps> = (): JSX.Element => {
+const PredictionEmissionChart: React.FC<PredictionEmissionChartProps> = ({ match }): JSX.Element => {
+  const emissionState: EmissionDataState = useEmissionState();
+  const { workplace } = match.params;
+  const now: Date = new Date();
+  
   const descriptionDataset: DescriptionData[] = [
     {
       value: '60K t',
@@ -79,16 +70,59 @@ const PredictionEmissionChart: React.FC<PredictionEmissionChartProps> = (): JSX.
     }
   ];
   
+  let chartData: any = [
+    [
+      'date',
+      '배출량',
+      '예측 배출량'
+    ]
+  ];
+  
+  for (let i = 0; i < 12; i++) {
+    chartData.push([new Date(now.getFullYear(), i), 0, 0]);
+  }
+  
+  emissionState.emissionData.emissionDataList.map((emissionData: EmissionDataForLocation): void => {
+    if (workplace === undefined || workplace === emissionData.location.en) {
+      emissionData.predictionEmissionTable.map((predictionEmissionData: TimeSeriesData): void => {
+        const date: Date = new Date(predictionEmissionData.date);
+    
+        if (date.getFullYear() === now.getFullYear()) {
+          chartData[date.getMonth() + 1][2] += predictionEmissionData.value;
+        }
+      });
+  
+      emissionData.pastEmissionTable.map((pastEmissionData: TimeSeriesData): void => {
+        const date: Date = new Date(pastEmissionData.date);
+    
+        if (date.getFullYear() === now.getFullYear()) {
+          chartData[date.getMonth() + 1][1] += pastEmissionData.value;
+        }
+      });
+    }
+  });
+  
+  // 0인 값 null 처리
+  for (let i = 0; i < 12; i++) {
+    if (chartData[i + 1][1] === 0) {
+      chartData[i + 1][1] = null;
+    }
+    
+    if (chartData[i + 1][2] === 0) {
+      chartData[i + 1][2] = null;
+    }
+  }
+  
   return (
     <>
-      <CardTitle title="예측 배출량"/>
+      <CardTitle title="예측 배출량" />
       <Chart
         width={'100%'}
         height={'300px'}
-        style={{marginTop: 5}}
+        style={{ marginTop: 5 }}
         chartType="LineChart"
         options={options}
-        data={data}
+        data={chartData}
         formatters={[
           {
             type: 'DateFormat',
@@ -120,4 +154,4 @@ const PredictionEmissionChart: React.FC<PredictionEmissionChartProps> = (): JSX.
   );
 };
 
-export default PredictionEmissionChart;
+export default withRouter(PredictionEmissionChart);

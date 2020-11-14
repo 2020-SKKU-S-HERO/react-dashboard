@@ -71,17 +71,17 @@ const data: any = [
     '온도',
     '습도'
   ],
-  [new Date(2020, 9, 17, 21, 0, 0), 17.2, 0.3],
-  [new Date(2020, 9, 18, 0, 0, 0), 18.2, 0.4],
-  [new Date(2020, 9, 18, 3, 0, 0), 18.5, 0.4],
-  [new Date(2020, 9, 18, 6, 0, 0), 20.8, 0.3],
-  [new Date(2020, 9, 18, 9, 0, 0), 24.1, 0.3],
-  [new Date(2020, 9, 18, 12, 0, 0), 27.7, 0.2]
+  [new Date(2020, 9, 17, 21, 0, 0), 11.7, 0.3],
+  [new Date(2020, 9, 18, 0, 0, 0), 10.6, 0.4],
+  [new Date(2020, 9, 18, 3, 0, 0), 10.1, 0.4],
+  [new Date(2020, 9, 18, 6, 0, 0), 11.8, 0.3],
+  [new Date(2020, 9, 18, 9, 0, 0), 13.4, 0.3],
+  [new Date(2020, 9, 18, 12, 0, 0), 15.2, 0.2]
 ];
 
 const WeatherSummaryBlock = styled.div`
   display: flex;
-  justify-content: left;
+  justify-content: center;
   height: 100px;
   padding: 0 0 20px 20px;
   
@@ -125,7 +125,7 @@ const WeatherChart: React.FC<WeatherChartProps> = (): JSX.Element => {
           <img src={cloudyIcon} />
         </div>
         <div className="description">
-          <div className="temp">27.7°</div>
+          <div className="temp">14.2°</div>
           <div className="humidity">습도: 20%</div>
         </div>
       </WeatherSummaryBlock>
